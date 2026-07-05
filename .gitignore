@@ -1,0 +1,15 @@
+# env
+.env
+.env.local
+
+# node
+node_modules/
+dist/
+build/
+
+# go
+/backend/bin/
+*.exe
+
+# os
+.DS_Store
