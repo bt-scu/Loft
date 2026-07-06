@@ -3,10 +3,15 @@ module github.com/bt-scu/Loft/backend
 go 1.25.7
 
 require (
-	github.com/go-chi/chi/v5 v5.3.0 // indirect
-	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.10.0 // indirect
-	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/zmb3/spotify/v2 v2.4.3
+)
+
+require (
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
