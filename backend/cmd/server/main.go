@@ -4,10 +4,33 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/bt-scu/Loft/backend/internal/spotify"
 	"github.com/joho/godotenv"
 )
+
+func withCORS(next http.Handler) http.Handler {
+	allowedOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if allowedOrigin == "" {
+		allowedOrigin = "http://localhost:5173"
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 // Function that runs when you call root url
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +66,7 @@ func main() {
 	fmt.Printf("Server starting on http://localhost%s\n", port)
 
 	// Start the server and log errors if it fails to start
-	err := http.ListenAndServe(port, mux)
+	err := http.ListenAndServe(port, withCORS(mux))
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
