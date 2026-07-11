@@ -9,7 +9,9 @@ build/
 
 # go
 /backend/bin/
+/backend/server
 *.exe
 
 # os
 .DS_Store
+

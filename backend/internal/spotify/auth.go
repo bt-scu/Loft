@@ -1,7 +1,6 @@
 package spotify
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -24,11 +23,17 @@ const state = "abc123"
 // Handlers holds the Spotify authenticator so the HTTP handlers below can be
 // registered as methods instead of relying on a package-level global.
 type Handlers struct {
-	auth *spotifyauth.Authenticator
+	auth           *spotifyauth.Authenticator
+	frontendOrigin string
 }
 
 // Handlers are a collection of dependencies(external things to make code works, usually has behaviors). We use pointer syntax to ensure we are using the same handler instance
 func NewHandlers() *Handlers {
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if frontendOrigin == "" {
+		frontendOrigin = "http://localhost:5173"
+	}
+
 	return &Handlers{
 		auth: spotifyauth.New(
 			spotifyauth.WithRedirectURL(redirectURI),
@@ -40,6 +45,7 @@ func NewHandlers() *Handlers {
 			spotifyauth.WithClientID(os.Getenv("SPOTIFY_CLIENT_ID")),
 			spotifyauth.WithClientSecret(os.Getenv("SPOTIFY_CLIENT_SECRET")),
 		),
+		frontendOrigin: frontendOrigin,
 	}
 }
 
@@ -76,5 +82,9 @@ func (h *Handlers) CompleteAuth(w http.ResponseWriter, r *http.Request) {
 
 	//affirm access
 	log.Printf("logged in as %s (access token: %s)\n", user.ID, tok.AccessToken)
-	fmt.Fprintf(w, "Login completed! Logged in as %s.", user.ID)
+
+	// No session/token persistence yet (that's the DB layer, still to come) —
+	// for now just send the browser back to the frontend so the login loop
+	// is click-through-able end to end.
+	http.Redirect(w, r, h.frontendOrigin, http.StatusFound)
 }

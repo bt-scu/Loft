@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/bt-scu/Loft/backend/internal/spotify"
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -49,24 +50,25 @@ func main() {
 	}
 
 	// Create a router (if you see some extra path route it to some function)
-	mux := http.NewServeMux()
+	router := chi.NewRouter()
+	router.Use(withCORS)
 
 	//Create spotify handlers
 	spotifyHandlers := spotify.NewHandlers()
 
 	// Register routing handlers
-	mux.HandleFunc("/", homeHandler)
-	mux.HandleFunc("GET /spotify/auth", spotifyHandlers.SpotifyAuthHandler)
+	router.Get("/", homeHandler)
+	router.Get("/spotify/auth", spotifyHandlers.SpotifyAuthHandler)
 
 	//not called by user (function initialized by spotify callback)
-	mux.HandleFunc("GET /auth/callback", spotifyHandlers.CompleteAuth)
+	router.Get("/auth/callback", spotifyHandlers.CompleteAuth)
 
 	// Define the network port
 	port := ":8080"
 	fmt.Printf("Server starting on http://localhost%s\n", port)
 
 	// Start the server and log errors if it fails to start
-	err := http.ListenAndServe(port, withCORS(mux))
+	err := http.ListenAndServe(port, router)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
