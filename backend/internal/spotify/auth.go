@@ -12,12 +12,7 @@ import (
 // redirects to the Spotify Developer Dashboard (alongside authcoe and state. THese values are nested inside of the callbackurl [auth/callback])
 const redirectURI = "http://127.0.0.1:8080/auth/callback"
 
-// state should be randomly generated per login attempt and tied to the session that started it.
-// An attacker's code always comes paired with the attacker's own state (from their own login).
-// A victim's session will have a different (or no) expected state stored for that state value,
-// so even if a victim's browser is tricked into requesting the callback with the attacker's
-// code + state, the server's state-comparison check fails and the callback is rejected —
-// preventing the victim's session from getting linked to the attacker's account.
+//State is randomly generated and cached. It prevents victems from accidentally auth as an attacker (e.g., phishing via access code) because the victem's device does not have the same cached state as the one generated for the attacker
 const state = "abc123"
 
 // Handlers holds the Spotify authenticator so the HTTP handlers below can be
@@ -28,7 +23,7 @@ type Handlers struct {
 }
 
 // Handlers are a collection of dependencies(external things to make code works, usually has behaviors). We use pointer syntax to ensure we are using the same handler instance
-func NewHandlers() *Handlers {
+func InitHandlers() *Handlers {
 	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
 	if frontendOrigin == "" {
 		frontendOrigin = "http://localhost:5173"
@@ -45,6 +40,7 @@ func NewHandlers() *Handlers {
 			spotifyauth.WithClientID(os.Getenv("SPOTIFY_CLIENT_ID")),
 			spotifyauth.WithClientSecret(os.Getenv("SPOTIFY_CLIENT_SECRET")),
 		),
+
 		frontendOrigin: frontendOrigin,
 	}
 }
@@ -69,6 +65,7 @@ func (h *Handlers) CompleteAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//takes (token + Context) -> wraps http client around it (which has the bearer token in the header) -> wraps this client and wraps it into a go object with nice go methods
+	//Essentially an object in code representing connection to spotify API
 	client := spotify.New(h.auth.Client(r.Context(), tok))
 
 	//Get request to Spotify's v1/m endpoint, sees the BEarer token and returns the user's profile. Fetches for user profiele

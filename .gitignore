@@ -10,6 +10,7 @@ build/
 # go
 /backend/bin/
 /backend/server
+/backend/cmd/server/server
 *.exe
 
 # os
